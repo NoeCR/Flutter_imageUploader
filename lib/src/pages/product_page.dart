@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:formvalidation/src/bloc/provider.dart';
 import 'package:formvalidation/src/models/product_model.dart';
-import 'package:formvalidation/src/services/product_service.dart';
 import 'package:formvalidation/src/utils/utils.dart' as utils;
 import 'package:image_picker/image_picker.dart';
 
@@ -14,8 +14,10 @@ class ProductPage extends StatefulWidget {
 class _ProductPageState extends State<ProductPage> {
   final formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final productService = new ProductService();
+  // Reemplazamos el servicio por el provider que contiene el BLoC de los productos
+  // final productService = new ProductService();
   ProductModel product = new ProductModel();
+  ProductBloc productBloc;
   // Bandera para bloquear el envío múltiple de peticiones
   bool _loading = false;
   // Almacenara la imágen
@@ -23,6 +25,8 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Inicializamos el BLoC para manejar el CRUD de los products
+    productBloc = Provider.productsBloc(context);
     // Obtenemos los argumentos de la llamada a este componente que tienen que
     // ser una instancia de ProductModel
     final ProductModel prodData = ModalRoute.of(context).settings.arguments;
@@ -111,17 +115,23 @@ class _ProductPageState extends State<ProductPage> {
     });
     // Subir imagen si existe y almacenar la url
     if (photo != null) {
-      product.photoUrl = await productService.uploadImage(File(photo.path));
+      // product.photoUrl = await productService.uploadImage(File(photo.path));
+      product.photoUrl = await productBloc.uploadImage(File(photo.path));
     }
 
     // Solo despues de validar el formulario, podemos salvar los cambios actuales
     // En los campos del formulario
     formKey.currentState.save();
+    //  Old
+    // if (product.id == null)
+    //   productService.createProduct(product);
+    // else
+    //   productService.updateProduct(product);
 
     if (product.id == null)
-      productService.createProduct(product);
+      productBloc.addProduct(product);
     else
-      productService.updateProduct(product);
+      productBloc.updateProduct(product);
 
     setState(() {
       _loading = false;

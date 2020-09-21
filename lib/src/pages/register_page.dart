@@ -3,7 +3,7 @@ import 'package:formvalidation/src/bloc/provider.dart';
 import 'package:formvalidation/src/services/user_service.dart';
 import 'package:formvalidation/src/utils/utils.dart' as utils;
 
-class LoginPage extends StatelessWidget {
+class RegisterPage extends StatelessWidget {
   final userService = new UserService();
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class LoginPage extends StatelessWidget {
                 ]),
             child: Column(
               children: <Widget>[
-                Text('Ingreso', style: TextStyle(fontSize: 20.0)),
+                Text('Registro', style: TextStyle(fontSize: 20.0)),
                 SizedBox(height: 60.0),
                 _crearEmail(bloc),
                 SizedBox(height: 30.0),
@@ -55,9 +55,8 @@ class LoginPage extends StatelessWidget {
             ),
           ),
           FlatButton(
-              onPressed: () =>
-                  Navigator.pushReplacementNamed(context, 'register'),
-              child: Text('Crear una nueva cuenta')),
+              onPressed: () => Navigator.pushReplacementNamed(context, 'login'),
+              child: Text('¿Ya tienes cuenta? Ingresa')),
           SizedBox(height: 100.0)
         ],
       ),
@@ -116,20 +115,22 @@ class LoginPage extends StatelessWidget {
         return RaisedButton(
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 15.0),
-              child: Text('Ingresar'),
+              child: Text('Registrar'),
             ),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5.0)),
             elevation: 0.0,
             color: Colors.deepPurple,
             textColor: Colors.white,
-            onPressed: snapshot.hasData ? () => _login(bloc, context) : null);
+            onPressed:
+                snapshot.hasData ? () => _register(bloc, context) : null);
       },
     );
   }
 
-  _login(LoginBloc bloc, BuildContext context) async {
-    Map info = await userService.login(bloc.email, bloc.password);
+  _register(LoginBloc bloc, BuildContext context) async {
+    // userService.newUser(bloc.email, bloc.password);
+    Map info = await userService.newUser(bloc.email, bloc.password);
 
     if (info['ok']) {
       Navigator.pushReplacementNamed(context, 'home');

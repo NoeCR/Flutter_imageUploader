@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:formvalidation/src/models/product_model.dart';
-import 'package:formvalidation/src/services/product_service.dart';
-// import 'package:formvalidation/src/bloc/provider.dart';
+import 'package:formvalidation/src/bloc/provider.dart';
 
 class HomePage extends StatelessWidget {
-  final productService = new ProductService();
   @override
   Widget build(BuildContext context) {
-    // final bloc = Provider.of(context);
+    // Cargamos el Bloc que queremos manejar en este componente
+    final productBloc = Provider.productsBloc(context);
+    productBloc.loadProducts();
     return Scaffold(
       appBar: AppBar(title: Text('Home')),
-      body: _createList(context),
+      body: _createList(context, productBloc),
       floatingActionButton: _createButton(context),
     );
   }
@@ -23,32 +23,42 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _createList(BuildContext context) {
-    return FutureBuilder(
-      future: productService.loadProducts(),
+  Widget _createList(BuildContext context, ProductBloc productsBloc) {
+    return StreamBuilder(
+      stream: productsBloc.productStream,
       builder: (context, AsyncSnapshot<List<ProductModel>> snapshot) =>
           (snapshot.hasData)
-              ? _buildList(context, snapshot.data)
+              ? _buildList(context, snapshot.data, productsBloc)
               : Center(child: CircularProgressIndicator()),
     );
+
+    // Old version with Futures
+    // return FutureBuilder(
+    //   future: productService.loadProducts(),
+    //   builder: (context, AsyncSnapshot<List<ProductModel>> snapshot) =>
+    //       (snapshot.hasData)
+    //           ? _buildList(context, snapshot.data)
+    //           : Center(child: CircularProgressIndicator()),
+    // );
   }
 
-  Widget _buildList(BuildContext context, List<ProductModel> products) {
+  Widget _buildList(BuildContext context, List<ProductModel> products,
+      ProductBloc productsBloc) {
     return ListView.builder(
       itemCount: products.length,
-      itemBuilder: (context, index) => _createItem(context, products[index]),
+      itemBuilder: (context, index) =>
+          _createItem(context, products[index], productsBloc),
     );
   }
 
-  Widget _createItem(BuildContext context, ProductModel product) {
+  Widget _createItem(
+      BuildContext context, ProductModel product, ProductBloc productsBloc) {
     return Dismissible(
       key: UniqueKey(),
       background: Container(
         color: Colors.red[100],
       ),
-      onDismissed: (direction) {
-        productService.deleteProduct(product.id);
-      },
+      onDismissed: (direction) => productsBloc.deleteProduct(product.id),
       child: Card(
         child: Column(
           children: [
